@@ -66,11 +66,11 @@ Genera y envía automáticamente al Director un informe completo de todos los cl
 
 ---
 
-## 📸 Screenshots
+## 📸 Capturas de pantalla
 
-| Workflow Overview | Collections Flow | Inventory Alert |
-|---|---|---|
-| ![Overview](assets/workflow-overview.png) | ![Collections](assets/niveles-cobranza.png) | ![Inventory](assets/ejemplo-whatsapp.png) |
+| Vista general del workflow | Flujo de cobranza | Alerta de inventario | Reporte semanal |
+|---|---|---|---|
+| ![Overview](assets/workflow-overview.png) | ![Collections](assets/niveles-cobranza.png) | ![Inventory](assets/ejemplo-whatsapp.png) | ![Report](assets/reporte-morosos.png) |
 
 ---
 
