@@ -69,12 +69,18 @@ Genera y envía automáticamente al Director un informe completo de todos los cl
 ## 📁 Estructura del proyecto
 
 ```
-├── Sistema_de_Gestión_de_Cobro_e_Inventario_con_Asistente_IA.json
-│                          ← Workflow N8N (importar directamente)
+debt-collection-inventory-ai/
+├── README.md              (inglés - nombre por defecto)
+├── README_ES.md           (español)
+├── workflow.json
+├── LICENSE
 ├── data/
 │   └── Proyecto_Inventario_Cobranza.xlsx
-│                          ← Plantilla Google Sheets (subir a Drive)
-└── README.md
+└── assets/
+    ├── workflow-overview.png
+    ├── niveles-cobranza.png
+    ├── ejemplo-whatsapp.png
+    └── reporte-morosos.png
 ```
 
 ---
