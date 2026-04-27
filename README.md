@@ -68,19 +68,25 @@ Automatically generates and emails the Director a full report of all delinquent 
 ## 📁 Project Structure
 
 ```
-├── debt-collection-inventory-ai.json
-│                          ← N8N workflow (import directly)
+debt-collection-inventory-ai/
+├── README.md              (english)
+├── README_ES.md           (spanish)
+├── workflow.json
+├── LICENSE
 ├── data/
 │   └── Proyecto_Inventario_Cobranza.xlsx
-│                          ← Google Sheets template (upload to Drive)
-└── README.md
+└── assets/
+    ├── workflow-overview.png
+    ├── niveles-cobranza.png
+    ├── ejemplo-whatsapp.png
+    └── reporte-morosos.png
 ```
 
 ## 📸 Screenshots
 
 | Workflow Overview | Collections Flow | Inventory Alert |
 |---|---|---|
-| ![Overview](assets/workflow-overview.png) | ![Collections](assets/niveles-cobranza.png) | ![Inventory](assets/alerta-stock.png) |
+| ![Overview](assets/workflow-overview.png) | ![Collections](assets/niveles-cobranza.png) | ![Inventory](assets/ejemplo-whatsapp.png) |
 
 ---
 
