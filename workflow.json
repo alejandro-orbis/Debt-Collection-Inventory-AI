@@ -1,0 +1,3119 @@
+{
+  "name": "Sistema de Gestión de Cobro e Inventario con Asistente IA",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg",
+              "name": "message",
+              "value": "={{ $json.messages[0].text.body }}",
+              "type": "string"
+            },
+            {
+              "id": "from",
+              "name": "from",
+              "value": "={{ $json.messages[0].from }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b0c5b961-eac4-4d00-ad02-a702dc97b520",
+      "name": "Extract Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1184,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cat",
+              "name": "categoria",
+              "value": "={{ $json.candidates[0].content.parts[0].text }}",
+              "type": "string"
+            },
+            {
+              "id": "msg2",
+              "name": "message",
+              "value": "={{ $('Extract Variables').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "from2",
+              "name": "from",
+              "value": "={{ $('Extract Variables').item.json.from }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fb6ea61c-0a08-47d4-8985-348bc5f6c0d1",
+      "name": "Extraer Categoría",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.categoria }}",
+                    "rightValue": "ADEUDO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e78d3d89-c2eb-4a0c-a749-a1c9403fd0b1"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ADEUDO"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.categoria }}",
+                    "rightValue": "INVENTARIO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "cf5e0744-6274-44fa-9c83-0a81feb56b88"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "INVENTARIO"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "bd6b8966-bf68-4b6e-b32f-674d47001dff",
+      "name": "Switch Categoría",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -512,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1688538771,
+          "mode": "list",
+          "cachedResultName": "Cobranza",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/GOOGLE_SHEETS_ID/edit#gid=1688538771"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "whatsapp",
+              "lookupValue": "={{ $('Extract Variables').item.json.from }}"
+            }
+          ]
+        },
+        "options": {
+          "returnAllMatches": "returnAllMatches"
+        }
+      },
+      "id": "9c5bd933-4dd8-4afa-9d20-594e42d55045",
+      "name": "Google Sheets - Adeudos",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        -80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zj5bwOFPydr87H0Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 877264827,
+          "mode": "list",
+          "cachedResultName": "Inventario",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/GOOGLE_SHEETS_ID/edit#gid=877264827"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {
+          "returnAllMatches": "returnAllMatches"
+        }
+      },
+      "id": "f066b74c-c9ef-4030-8b3c-1200e65aad53",
+      "name": "Google Sheets - Inventario",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        128
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zj5bwOFPydr87H0Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cliente = $input.first().json;\n\nif (!cliente || cliente.whatsapp === undefined) {\n  return [{ json: { message: '⚠️ No encontramos su información. Por favor contacte a servicio al cliente al teléfono (999) 000-0000.' } }];\n}\n\nconst adeudo = parseFloat(cliente.importe || 0);\nconst nombre = cliente.cliente || 'Cliente';\n\nif (adeudo <= 0) {\n  return [{ json: { message: `Hola ${nombre} 👋, no tiene adeudos pendientes. ¡Gracias por mantenerse al corriente!` } }];\n}\n\nconst vencimiento = cliente.fecha_vencimiento || 'N/D';\nreturn [{\n  json: {\n    message: `Hola ${nombre} 👋\\n\\nSu adeudo actual es:\\n💰 *${adeudo.toFixed(2)} €*\\n📅 Vencimiento: ${vencimiento}\\n\\nPara más información comuníquese con su ejecutivo de cuenta.`\n  }\n}];"
+      },
+      "id": "16fe1de7-d175-420e-a23f-1c7d890c4c85",
+      "name": "Formatear Respuesta Adeudo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const todos = $input.all();\nconst busqueda = $('Extraer Categoría').item.json.message.toLowerCase();\n\nconst productos = todos.filter(p => \n  p.json.producto && p.json.producto.toLowerCase().includes(busqueda)\n);\n\nif (productos.length === 0) {\n  return [{ json: { message: '⚠️ No encontramos productos con ese nombre. Intente con otro término o contacte a su ejecutivo.' } }];\n}\n\nlet respuesta = '📦 *Disponibilidad de productos:*\\n\\n';\n\nfor (const p of productos) {\n  const stock = parseInt(p.json.stock_actual || 0);\n  const minimo = parseInt(p.json.stock_minimo || 0);\n  const nombre = p.json.producto || 'Producto';\n  const status = stock > minimo ? '✅ Disponible' : '⚠️ Stock bajo';\n  respuesta += `*${nombre}*\\n${status} — ${stock} unidades\\n\\n`;\n}\n\nrespuesta += 'Para hacer un pedido, contacte a su ejecutivo de cuenta.';\n\nreturn [{ json: { message: respuesta } }];"
+      },
+      "id": "bcdf9a49-6d71-4227-9896-1767df5a8d7f",
+      "name": "Formatear Respuesta Inventario",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    message: 'Hola 👋, soy el asistente automático.\\n\\nPuedo ayudarle con:\\n📋 *Consulta de adeudo* — escriba \"mi adeudo\" o \"cuánto debo\"\\n📦 *Disponibilidad de productos* — escriba el nombre del producto\\n\\n¿En qué le puedo ayudar?'\n  }\n}];"
+      },
+      "id": "22564522-ac0d-4865-afb3-f6211b3a2b96",
+      "name": "Respuesta Genérica",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1424,
+        128
+      ],
+      "id": "3243799d-a687-49ec-9314-c5af4fa5f35c",
+      "name": "WhatsApp Trigger",
+      "webhookId": "f2e1da72-b922-4374-b313-8231d53e05fe",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "Dj95WwU7OltNzSmk",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=TU_WHATSAPP_PHONE_NUMBER_ID",
+        "recipientPhoneNumber": "={{ $('Extraer Categoría').item.json.from }}",
+        "textBody": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        96
+      ],
+      "id": "5574a0fe-02f3-44c7-9ddf-6ee7cf6f656f",
+      "name": "Send message",
+      "webhookId": "1d0c0023-0c62-44ef-adbf-5186adff9ca6",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "T0uoVRdi82ENLdM0",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=TU_GEMINI_API_KEY",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"contents\": [\n        {\n            \"parts\": [\n                {\n                    \"text\": \"Clasifica el mensaje del cliente en ADEUDO, INVENTARIO o OTRO. Responde solo la palabra. Mensaje: {{ $json.message }}\"\n                }\n            ]\n        }\n    ]\n}",
+        "options": {}
+      },
+      "id": "ddeb7b93-1c73-4564-ae68-75565ee37774",
+      "name": "Clasificar con GeminiAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -928,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "fde3f7d1-e5b7-4db4-9e88-4ccf377a849d",
+      "name": "Trigger 8am Diario",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1408,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 877264827,
+          "mode": "list",
+          "cachedResultName": "Inventario",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/GOOGLE_SHEETS_ID/edit#gid=877264827"
+        },
+        "options": {
+          "returnAllMatches": "returnAllMatches"
+        }
+      },
+      "id": "e99e7e19-173d-402a-bc46-ad97349590ac",
+      "name": "Leer Inventario Completo",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -1168,
+        768
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zj5bwOFPydr87H0Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filtra solo productos con alerta activa\nconst todos = $input.all();\n\nconst alertas = todos.filter(item => {\n  const alerta = (item.json.alerta_activa || '').toString().trim().toUpperCase();\n  return alerta === 'SÍ' || alerta === 'SI';\n});\n\nif (alertas.length === 0) {\n  // No hay alertas — termina el flujo silenciosamente\n  return [];\n}\n\n// Enriquece cada producto con el contexto que necesita Gemini\nreturn alertas.map(item => ({\n  json: {\n    producto:           item.json.producto || '',\n    descripcion:        item.json.descripcion || '',\n    stock_actual:       parseInt(item.json.stock_actual || 0),\n    stock_minimo:       parseInt(item.json.stock_minimo || 0),\n    proveedor:          item.json.proveedor || '',\n    email_proveedor:    item.json.email_proveedor || '',\n    whatsapp_proveedor: item.json.whatsapp_proveedor || '',\n    precio_unitario:    parseFloat(item.json.precio_unitario || 0),\n    historial: [\n      { fecha: item.json.ultima_compra_1, cantidad: item.json.cantidad_1, precio: item.json.precio_1 },\n      { fecha: item.json.ultima_compra_2, cantidad: item.json.cantidad_2, precio: item.json.precio_2 },\n      { fecha: item.json.ultima_compra_3, cantidad: item.json.cantidad_3, precio: item.json.precio_3 }\n    ],\n    notas: item.json.notas || ''\n  }\n}));"
+      },
+      "id": "45b06adb-5e8d-4bca-9d84-2ec1d97c4bc4",
+      "name": "Filtrar Alertas Activas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "74b1ca83-9f05-45bb-ba67-d0afb84d27de",
+      "name": "Un Producto a la Vez",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -688,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=TU_GEMINI_API_KEY",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Eres un asistente de compras profesional. Genera un borrador de orden de compra formal y conciso en español.\\n\\nPRODUCTO: {{ $json.producto }}\\nDESCRIPCIÓN: {{ $json.descripcion }}\\nSTOCK ACTUAL: {{ $json.stock_actual }} unidades\\nSTOCK MÍNIMO: {{ $json.stock_minimo }} unidades\\nPRECIO UNITARIO ACTUAL: {{ $json.precio_unitario }}€\\nPROVEEDOR: {{ $json.proveedor }}\\n\\nHISTORIAL DE COMPRAS:\\n- {{ $json.historial[0].fecha }}: {{ $json.historial[0].cantidad }} unidades a {{ $json.historial[0].precio }}€\\n- {{ $json.historial[1].fecha }}: {{ $json.historial[1].cantidad }} unidades a {{ $json.historial[1].precio }}€\\n- {{ $json.historial[2].fecha }}: {{ $json.historial[2].cantidad }} unidades a {{ $json.historial[2].precio }}€\\n\\nNOTAS: {{ $json.notas }}\\n\\nGenera:\\n1. Cantidad sugerida a pedir (basada en el historial)\\n2. Precio unitario sugerido (basada en el historial)\\n3. Importe total estimado\\n4. Justificación breve (2 líneas máximo)\\n5. Texto del email de pedido al proveedor (formal, menos de 100 palabras)\\n\\nFormato de respuesta: JSON con campos: cantidad_sugerida, precio_sugerido, importe_total, justificacion, email_proveedor_texto\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "45d6e8e2-9312-4907-ba44-3e2f566118f4",
+      "name": "Gemini Genera OC",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -448,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrae y parsea la respuesta de Gemini\nconst producto = $('Un Producto a la Vez').item.json;\nconst respuesta = $json.candidates[0].content.parts[0].text;\n\n// Limpia el JSON que devuelve Gemini (puede venir con ```json)\nlet oc;\ntry {\n  const clean = respuesta.replace(/```json|```/g, '').trim();\n  oc = JSON.parse(clean);\n} catch(e) {\n  // Si Gemini no devuelve JSON válido, usamos valores por defecto\n  oc = {\n    cantidad_sugerida: producto.stock_minimo * 2,\n    precio_sugerido: producto.precio_unitario,\n    importe_total: producto.stock_minimo * 2 * producto.precio_unitario,\n    justificacion: 'Reposición automática por stock mínimo alcanzado.',\n    email_proveedor_texto: `Estimados ${producto.proveedor}, solicitamos reposición de ${producto.producto}. Por favor confirmen disponibilidad y fecha de entrega.`\n  };\n}\n\nconst fecha = new Date().toLocaleDateString('es-ES');\nconst numeroOC = `OC-${Date.now()}`;\n\n// Mensaje WhatsApp para el auxiliar\nconst mensajeWhatsApp = `🚨 *ALERTA DE STOCK BAJO*\\n\\n📦 *Producto:* ${producto.producto}\\n📉 *Stock actual:* ${producto.stock_actual} uds (mínimo: ${producto.stock_minimo})\\n\\n✅ *OC Sugerida ${numeroOC}*\\n• Cantidad: ${oc.cantidad_sugerida} uds\\n• Precio unitario: ${oc.precio_sugerido}€\\n• *Total: ${oc.importe_total}€*\\n\\n🏭 Proveedor: ${producto.proveedor}\\n📧 ${producto.email_proveedor}\\n\\n⚠️ El Director recibirá el email de autorización en breve.`;\n\n// Email para el Director\nconst asuntoEmail = `[AUTORIZACIÓN REQUERIDA] Orden de Compra ${numeroOC} — ${producto.producto}`;\nconst cuerpoEmail = `\n<html><body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n\n<div style=\"background: #1a7a1a; color: white; padding: 20px; border-radius: 8px 8px 0 0;\">\n  <h2 style=\"margin:0\">🛒 Orden de Compra Automática</h2>\n  <p style=\"margin:5px 0 0 0; opacity:0.9\">${numeroOC} — ${fecha}</p>\n</div>\n\n<div style=\"background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107;\">\n  <strong>⚠️ Se requiere su autorización</strong><br>\n  El stock de <strong>${producto.producto}</strong> ha caído por debajo del nivel mínimo.\n</div>\n\n<div style=\"padding: 20px; background: #f9f9f9;\">\n  <h3>📦 Detalle del Producto</h3>\n  <table style=\"width:100%; border-collapse:collapse;\">\n    <tr><td style=\"padding:8px; border-bottom:1px solid #eee;\"><strong>Producto</strong></td><td style=\"padding:8px; border-bottom:1px solid #eee;\">${producto.producto}</td></tr>\n    <tr><td style=\"padding:8px; border-bottom:1px solid #eee;\"><strong>Stock actual</strong></td><td style=\"padding:8px; border-bottom:1px solid #eee; color:#d32f2f;\">${producto.stock_actual} unidades</td></tr>\n    <tr><td style=\"padding:8px; border-bottom:1px solid #eee;\"><strong>Stock mínimo</strong></td><td style=\"padding:8px; border-bottom:1px solid #eee;\">${producto.stock_minimo} unidades</td></tr>\n    <tr><td style=\"padding:8px; border-bottom:1px solid #eee;\"><strong>Proveedor</strong></td><td style=\"padding:8px; border-bottom:1px solid #eee;\">${producto.proveedor}</td></tr>\n  </table>\n\n  <h3>✅ OC Sugerida por IA</h3>\n  <table style=\"width:100%; border-collapse:collapse;\">\n    <tr><td style=\"padding:8px; border-bottom:1px solid #eee;\"><strong>Cantidad sugerida</strong></td><td style=\"padding:8px; border-bottom:1px solid #eee;\">${oc.cantidad_sugerida} unidades</td></tr>\n    <tr><td style=\"padding:8px; border-bottom:1px solid #eee;\"><strong>Precio unitario</strong></td><td style=\"padding:8px; border-bottom:1px solid #eee;\">${oc.precio_sugerido}€</td></tr>\n    <tr><td style=\"padding:8px; border-bottom:1px solid #eee;\"><strong>Importe total</strong></td><td style=\"padding:8px; border-bottom:1px solid #eee;\"><strong style=\"color:#1a7a1a; font-size:1.2em;\">${oc.importe_total}€</strong></td></tr>\n  </table>\n\n  <div style=\"background:#e8f5e9; padding:12px; border-radius:6px; margin-top:15px;\">\n    <strong>📊 Justificación IA:</strong><br>${oc.justificacion}\n  </div>\n\n  <h3>📧 Texto sugerido para el proveedor</h3>\n  <div style=\"background:#f5f5f5; padding:12px; border-radius:6px; font-style:italic;\">\n    ${oc.email_proveedor_texto}\n  </div>\n</div>\n\n<div style=\"padding: 20px; text-align:center;\">\n  <p><strong>¿Autoriza esta orden de compra?</strong></p>\n  <a href=\"mailto:auxiliar@empresa.com?subject=AUTORIZADO: ${numeroOC}&body=Confirmo la autorización de la OC ${numeroOC} por ${oc.importe_total}€\" \n     style=\"background:#1a7a1a; color:white; padding:12px 24px; border-radius:6px; text-decoration:none; margin:5px; display:inline-block;\">✅ AUTORIZAR</a>\n  <a href=\"mailto:auxiliar@empresa.com?subject=CORREGIR: ${numeroOC}&body=Por favor revisar la OC ${numeroOC}. Comentarios: \" \n     style=\"background:#d32f2f; color:white; padding:12px 24px; border-radius:6px; text-decoration:none; margin:5px; display:inline-block;\">✏️ CORREGIR</a>\n</div>\n\n<div style=\"background:#f5f5f5; padding:12px; text-align:center; font-size:12px; color:#666; border-radius:0 0 8px 8px;\">\n  Generado automáticamente por Tu Empresa S.L. · ${fecha}\n</div>\n\n</body></html>\n`;\n\nreturn [{\n  json: {\n    ...producto,\n    oc,\n    numeroOC,\n    fecha,\n    mensajeWhatsApp,\n    asuntoEmail,\n    cuerpoEmail\n  }\n}];"
+      },
+      "id": "d11de74c-e7cc-4077-b5c4-a4576f0b93d0",
+      "name": "Preparar Notificaciones",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "director@tuempresa.com",
+        "subject": "={{ $json.asuntoEmail }}",
+        "message": "={{ $json.cuerpoEmail }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "ecf452ef-318b-4923-b2ca-6a6f75df8889",
+      "name": "Gmail Director",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        880
+      ],
+      "webhookId": "c97c96d2-2f2c-41f3-a245-1107c9e78412",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ljgYCoOX6HUCFoiL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Inventario"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "alerta_activa": "PENDIENTE",
+            "notas": "=={{ $('Preparar Notificaciones').item.json.notas + ' | OC: ' + $('Preparar Notificaciones').item.json.numeroOC + ' (' + $('Preparar Notificaciones').item.json.fecha + ')' }}",
+            "row_number": 0,
+            "producto": "={{ $('Preparar Notificaciones').item.json.producto }}"
+          },
+          "matchingColumns": [
+            "producto"
+          ],
+          "schema": [
+            {
+              "id": "producto",
+              "displayName": "producto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "descripcion",
+              "displayName": "descripcion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stock_actual",
+              "displayName": "stock_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stock_minimo",
+              "displayName": "stock_minimo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "proveedor",
+              "displayName": "proveedor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_proveedor",
+              "displayName": "email_proveedor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "whatsapp_proveedor",
+              "displayName": "whatsapp_proveedor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "precio_unitario",
+              "displayName": "precio_unitario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ultima_compra_1",
+              "displayName": "ultima_compra_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cantidad_1",
+              "displayName": "cantidad_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "precio_1",
+              "displayName": "precio_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ultima_compra_2",
+              "displayName": "ultima_compra_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cantidad_2",
+              "displayName": "cantidad_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "precio_2",
+              "displayName": "precio_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ultima_compra_3",
+              "displayName": "ultima_compra_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cantidad_3",
+              "displayName": "cantidad_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "precio_3",
+              "displayName": "precio_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "alerta_activa",
+              "displayName": "alerta_activa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notas",
+              "displayName": "notas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "0ca6161a-3a93-455b-9c49-85faa12ca0ce",
+      "name": "Actualizar Estado en Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        272,
+        768
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zj5bwOFPydr87H0Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const gemini = $input.first().json;\nlet mensajeWhatsApp = gemini.candidates[0].content.parts[0].text;\n\n// Limpiar formato y preámbulos\nmensajeWhatsApp = mensajeWhatsApp\n  .replace(/\\*\\*/g, '*')\n  .replace(/^(Claro,?|Aquí tienes[^:]*:|Por supuesto,?)[^\\n]*\\n+/i, '')\n  .trim();\n\nconst cliente = $('Calcular Días y Nivel').item.json;\nconst importeFormateado = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(cliente.importe);\nconst fechaVencimiento = new Date(cliente.fecha_vencimiento).toLocaleDateString('es-ES');\n\nreturn [{\n  json: {\n    ...cliente,\n    mensajeWhatsApp,\n    importeFormateado,\n    fechaVencimiento,\n    canal: 'whatsapp',\n    nivel: 1\n  }\n}];"
+      },
+      "id": "243918c7-4387-40c2-b493-6dc9e8650dd9",
+      "name": "Extraer Texto N1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        1312
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const gemini = $input.first().json;\nlet textoGemini = gemini.candidates[0].content.parts[0].text;\n\ntextoGemini = textoGemini\n  .replace(/\\*\\*/g, '')\n  .replace(/^(Claro,?|Aquí tienes[^:]*:|Por supuesto,?)[^\\n]*\\n+/i, '')\n  .trim();\n\nconst cliente = $('Calcular Días y Nivel').item.json;\nconst importeFormateado = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(cliente.importe);\nconst fechaVencimiento = new Date(cliente.fecha_vencimiento).toLocaleDateString('es-ES');\nconst hoy = new Date().toLocaleDateString('es-ES');\n\nconst asuntoEmail = `📄 Aviso de vencimiento: Factura ${cliente.factura} – ${importeFormateado}`;\n\nconst cuerpoEmail = `\n<html>\n<body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <div style=\"background: #fff3cd; padding: 20px; border-radius: 8px 8px 0 0; border-left: 4px solid #ffc107;\">\n    <h2 style=\"margin:0; color:#856404;\">⚠️ Factura con vencimiento hoy</h2>\n  </div>\n  <div style=\"padding: 20px;\">\n    <div style=\"background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 15px 0;\">\n      ${textoGemini}\n    </div>\n    <h3>📋 Datos de la factura</h3>\n    <table style=\"width:100%; border-collapse: collapse;\">\n      <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>Factura</strong></td><td style=\"padding: 8px;\">${cliente.factura}</td></tr>\n      <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>Importe</strong></td><td style=\"padding: 8px;\"><strong style=\"color:#856404;\">${importeFormateado}</strong></td></tr>\n      <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>Fecha vencimiento</strong></td><td style=\"padding: 8px;\">${fechaVencimiento}</td></tr>\n    </table>\n    <p style=\"font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 15px;\">\n      Si ya realizó el pago, ignore este mensaje.\n    </p>\n  </div>\n  <div style=\"background: #f5f5f5; padding: 12px; text-align: center; font-size: 11px; border-radius: 0 0 8px 8px;\">\n    Generado automáticamente por Tu Empresa S.L. · ${hoy}\n  </div>\n</body>\n</html>`;\n\nreturn [{\n  json: {\n    ...cliente,\n    asuntoEmail,\n    cuerpoEmail,\n    importeFormateado,\n    fechaVencimiento,\n    textoGemini,\n    canal: 'email',\n    nivel: 2\n  }\n}];"
+      },
+      "id": "339b94c0-d80e-4316-ab05-d85692f6b383",
+      "name": "Extraer Texto N2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        1472
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const gemini = $input.first().json;\nlet mensajeWhatsApp = gemini.candidates[0].content.parts[0].text;\n\nmensajeWhatsApp = mensajeWhatsApp\n  .replace(/\\*\\*/g, '*')\n  .replace(/^(Claro,?|Aquí tienes[^:]*:|Por supuesto,?)[^\\n]*\\n+/i, '')\n  .trim();\n\nconst cliente = $('Calcular Días y Nivel').item.json;\nconst importeFormateado = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(cliente.importe);\nconst diasVencido = Math.abs(cliente.dias_vencido_calculado || 8);\nconst fechaVencimiento = new Date(cliente.fecha_vencimiento).toLocaleDateString('es-ES');\n\nreturn [{\n  json: {\n    ...cliente,\n    mensajeWhatsApp,\n    importeFormateado,\n    diasVencido,\n    fechaVencimiento,\n    canal: 'whatsapp',\n    nivel: 3,\n    urgente: true\n  }\n}];"
+      },
+      "id": "a493cc39-36ce-480f-a3b1-64e5a5258ac3",
+      "name": "Extraer Texto N3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        1648
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=TU_GEMINI_API_KEY",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Genera un mensaje amable por WhatsApp para recordar a un cliente que su factura vence en 3 días. Cliente: {{ $json.cliente }}. Factura: {{ $json.factura }}. Importe: {{ $json.importe }}. Fecha vencimiento: {{ $json.fecha_vencimiento }}. Tono: cordial, profesional, breve (máx 200 caracteres).\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0.7,\n    \"maxOutputTokens\": 150\n  }\n}",
+        "options": {}
+      },
+      "id": "db618b38-13e8-4a80-95b5-439f4808c1bb",
+      "name": "Prompt Nivel 1 - Amable",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        1312
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=TU_GEMINI_API_KEY",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Genera un email formal para notificar a un cliente que su factura vence hoy. Cliente: {{ $json.cliente }}. Factura: {{ $json.factura }}. Importe: {{ $json.importe }}. Fecha vencimiento: {{ $json.fecha_vencimiento }}. Incluye datos bancarios para el pago. Tono: profesional, educación.\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0.7,\n    \"maxOutputTokens\": 300\n  }\n}",
+        "options": {}
+      },
+      "id": "ea82f746-574f-411d-8a37-2457e2ac4b0b",
+      "name": "Prompt Nivel 2 - Formal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        1472
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=TU_GEMINI_API_KEY",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Genera un mensaje URGENTE por WhatsApp para un cliente con factura vencida hace 8 días. Cliente: {{ $json.cliente }}. Factura: {{ $json.factura }}. Importe: {{ $json.importe }}. Tono: urgente pero profesional. Plazo: regularizar en 48 horas. Máx 200 caracteres.\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0.7,\n    \"maxOutputTokens\": 150\n  }\n}",
+        "options": {}
+      },
+      "id": "4c3a6223-74cf-4dd4-b890-832af3404444",
+      "name": "Prompt Nivel 3 - Urgente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        1648
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        1168
+      ],
+      "id": "dfb3d981-5a21-471d-8933-8785050fcac1",
+      "name": "Ignorar - Sin Nivel"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "5dd6d421-4a11-447f-9f37-b4e1f354288b",
+      "name": "Trigger Diario 8am — Cobranza",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1440,
+        1600
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1688538771,
+          "mode": "list",
+          "cachedResultName": "Cobranza",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/GOOGLE_SHEETS_ID/edit#gid=1688538771"
+        },
+        "options": {
+          "returnAllMatches": "returnAllMatches"
+        }
+      },
+      "id": "8b3daad2-64d8-445d-830a-0bcea424a844",
+      "name": "Leer Facturas — Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -1184,
+        1600
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zj5bwOFPydr87H0Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst resultados = [];\n\nfor (const item of items) {\n  const data = item.json;\n  const hoy = new Date();\n  hoy.setHours(0, 0, 0, 0);\n  \n  const vencimiento = new Date(data.fecha_vencimiento);\n  vencimiento.setHours(0, 0, 0, 0);\n  \n  const diffDays = Math.round((hoy - vencimiento) / (1000 * 60 * 60 * 24));\n  \n  let nivel = null;\n  let estado = data.estado || 'AL DÍA';\n  \n  // === NUEVA LÓGICA: Respetar el estado que viene de Sheets ===\n  // Si en Google Sheets ya está marcado como MOROSO, mantener nivel 4\n  // Si está AL DÍA o PAGADO, NO asignar nivel 4 aunque diffDays sea grande\n  \n  if (estado === 'MOROSO') {\n    // Cliente ya marcado como moroso en Sheets\n    nivel = 4;\n  }\n  else if (estado === 'AL DÍA' || estado === 'PAGADO' || estado === '') {\n    // Cliente al día - no asignar nivel de cobranza\n    nivel = null;\n  }\n  else {\n    // Para clientes no morosos, calcular según días de vencimiento\n    if (diffDays >= -4 && diffDays <= -2) {\n      nivel = 1;\n      estado = 'POR VENCER';\n    } \n    else if (diffDays >= -1 && diffDays <= 1) {\n      nivel = 2;\n      estado = 'VENCE HOY';\n    } \n    else if (diffDays >= 7 && diffDays <= 10) {\n      nivel = 3;\n      estado = 'VENCIDA';\n    }\n    else if (diffDays >= 20 && estado !== 'MOROSO') {\n      // Si tiene más de 20 días pero NO está marcado como MOROSO,\n      // lo marcamos ahora\n      nivel = 4;\n      estado = 'MOROSO';\n    }\n    else {\n      nivel = null;\n      estado = 'AL DÍA';\n    }\n  }\n  \n  resultados.push({\n    json: {\n      ...data,\n      dias_vencido_calculado: diffDays,\n      nivel_asignado: nivel,\n      estado: estado\n    }\n  });\n}\n\n// Devolver SOLO los que tienen nivel asignado (excluye AL DÍA)\nreturn resultados.filter(r => r.json.nivel_asignado !== null);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        1600
+      ],
+      "id": "7a93d8d4-f8d2-4b29-bfaa-e58fc18856a9",
+      "name": "Calcular Días y Nivel"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.nivel_asignado }}",
+                    "rightValue": 0,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "id": "cd0085c4-725b-4fd0-9b80-617469c0f126"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Nivel 0 (Al día)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "aa81578d-8f0e-4d6e-b0b2-6bf0afbc5579",
+                    "leftValue": "={{ $json.nivel_asignado }}",
+                    "rightValue": 1,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Nivel 1 (WhatsApp amable)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6de88a48-755f-4041-adac-f3881fd251fa",
+                    "leftValue": "={{ $json.nivel_asignado }}",
+                    "rightValue": 2,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Nivel 2 (Email formal)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b1bb77fa-a24f-4846-8669-76cd497a5e3d",
+                    "leftValue": "={{ $json.nivel_asignado }}",
+                    "rightValue": 3,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Nivel 3 (WhatsApp urgente)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "846b9b76-eaff-4546-a629-7983019ebe54",
+                    "leftValue": "={{ $json.nivel_asignado }}",
+                    "rightValue": 4,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Nivel 4 (Alerta Director)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -592,
+        1552
+      ],
+      "id": "b7115706-9035-4903-8b4d-0a7f91ec1ea8",
+      "name": "Enrutar por Nivel de Escalamiento"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/TU_WHATSAPP_PHONE_NUMBER_ID/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_WHATSAPP_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={\"messaging_product\": \"whatsapp\", \"to\": \"{{ $json.whatsapp }}\", \"type\": \"text\", \"text\": {\"body\": {{ JSON.stringify($json.mensajeWhatsApp) }}}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        176,
+        1312
+      ],
+      "id": "416cd8ac-91f8-4a46-a7e0-f4e4155ea391",
+      "name": "WhatsApp Cliente — Recordatorio"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Cobranza",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ultimo_contacto": "={{ new Date().toLocaleDateString('es-ES') }}",
+            "row_number": 0,
+            "factura": "={{ $('Extraer Texto N1').item.json.factura }}",
+            "estado": "={{ $('Extraer Texto N1').item.json.estado }}",
+            "nivel_escalamiento": "={{ $('Extraer Texto N1').item.json.nivel_escalamiento }}"
+          },
+          "matchingColumns": [
+            "factura"
+          ],
+          "schema": [
+            {
+              "id": "cliente",
+              "displayName": "cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contacto",
+              "displayName": "contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "whatsapp",
+              "displayName": "whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "factura",
+              "displayName": "factura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "importe",
+              "displayName": "importe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha_emision",
+              "displayName": "fecha_emision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha_vencimiento",
+              "displayName": "fecha_vencimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "dias_vencido",
+              "displayName": "dias_vencido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nivel_escalamiento",
+              "displayName": "nivel_escalamiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ultimo_contacto",
+              "displayName": "ultimo_contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notas",
+              "displayName": "notas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "af3d6f32-6b15-49f7-9f02-f82db0088579",
+      "name": "Sheets — Marcar Nivel 1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        1312
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zj5bwOFPydr87H0Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.asuntoEmail }}",
+        "message": "={{ $json.cuerpoEmail }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "5c1674f1-6890-4d67-8a3d-51332f172c9f",
+      "name": "Email Cliente — Aviso Vencimiento",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        176,
+        1472
+      ],
+      "webhookId": "c97c96d2-2f2c-41f3-a245-1107c9e78412",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ljgYCoOX6HUCFoiL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Cobranza",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ultimo_contacto": "={{ new Date().toLocaleDateString('es-ES') }}",
+            "row_number": 0,
+            "factura": "={{ $('Extraer Texto N2').item.json.factura }}",
+            "estado": "={{ $('Extraer Texto N2').item.json.estado }}",
+            "nivel_escalamiento": "={{ $('Extraer Texto N2').item.json.nivel_escalamiento }}"
+          },
+          "matchingColumns": [
+            "factura"
+          ],
+          "schema": [
+            {
+              "id": "cliente",
+              "displayName": "cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contacto",
+              "displayName": "contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "whatsapp",
+              "displayName": "whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "factura",
+              "displayName": "factura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "importe",
+              "displayName": "importe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha_emision",
+              "displayName": "fecha_emision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha_vencimiento",
+              "displayName": "fecha_vencimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "dias_vencido",
+              "displayName": "dias_vencido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nivel_escalamiento",
+              "displayName": "nivel_escalamiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ultimo_contacto",
+              "displayName": "ultimo_contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notas",
+              "displayName": "notas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "268fd786-4971-435a-89ad-57cc82579236",
+      "name": "Sheets — Marcar Nivel 2",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        1472
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zj5bwOFPydr87H0Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/TU_WHATSAPP_PHONE_NUMBER_ID/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_WHATSAPP_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={\"messaging_product\": \"whatsapp\", \"to\": \"{{ $json.whatsapp }}\", \"type\": \"text\", \"text\": {\"body\": {{ JSON.stringify($json.mensajeWhatsApp) }}}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        176,
+        1648
+      ],
+      "id": "90a897a4-0db1-4dc3-9422-31d1b5965a9f",
+      "name": "WhatsApp Cliente — Urgente"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Cobranza",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ultimo_contacto": "={{ new Date().toLocaleDateString('es-ES') }}",
+            "row_number": 0,
+            "factura": "={{ $('Extraer Texto N3').item.json.factura }}",
+            "estado": "={{ $('Extraer Texto N3').item.json.estado }}",
+            "nivel_escalamiento": "={{ $('Extraer Texto N3').item.json.nivel_escalamiento }}"
+          },
+          "matchingColumns": [
+            "factura"
+          ],
+          "schema": [
+            {
+              "id": "cliente",
+              "displayName": "cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contacto",
+              "displayName": "contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "whatsapp",
+              "displayName": "whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "factura",
+              "displayName": "factura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "importe",
+              "displayName": "importe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha_emision",
+              "displayName": "fecha_emision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha_vencimiento",
+              "displayName": "fecha_vencimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "dias_vencido",
+              "displayName": "dias_vencido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nivel_escalamiento",
+              "displayName": "nivel_escalamiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ultimo_contacto",
+              "displayName": "ultimo_contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notas",
+              "displayName": "notas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c8c5bb3c-8170-438a-a733-c4707f433f52",
+      "name": "Sheets — Marcar Nivel 3",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        1648
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zj5bwOFPydr87H0Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "d58a5ffa-73d7-4e5c-9d33-ab177df763c1",
+      "name": "Trigger Semanal 8am — Reporte Morosos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1456,
+        2576
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "director@tuempresa.com",
+        "subject": "={{ $json.asunto }}",
+        "message": "={{ $json.cuerpoHtml }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -800,
+        2576
+      ],
+      "id": "a7b75260-c348-48d8-a04c-e9961142abdc",
+      "name": "Enviar Reporte a Director",
+      "webhookId": "7ce456bd-0bd2-45ef-87ab-4337379a70b0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ljgYCoOX6HUCFoiL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1688538771,
+          "mode": "list",
+          "cachedResultName": "Cobranza",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/GOOGLE_SHEETS_ID/edit#gid=1688538771"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "estado",
+              "lookupValue": "MOROSO"
+            }
+          ]
+        },
+        "options": {
+          "returnAllMatches": "returnAllMatches"
+        }
+      },
+      "id": "0a0cf5f6-6bb0-4d8b-bb60-9573f0be1b4b",
+      "name": "Leer Cobranza — Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -1216,
+        2576
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zj5bwOFPydr87H0Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst hoy = new Date().toLocaleDateString('es-ES');\n\nif (items.length === 0) {\n  // No hay morosos, enviar reporte vacío\n  return [{\n    json: {\n      hayMorosos: false,\n      asunto: \"Reporte semanal de morosos - Sin novedades\",\n      cuerpoHtml: `\n        <html>\n        <body style=\"font-family: Arial, sans-serif;\">\n          <h2>📊 Reporte Semanal de Morosos</h2>\n          <p><strong>Fecha:</strong> ${hoy}</p>\n          <p>✅ No hay clientes en estado moroso esta semana.</p>\n          <hr>\n          <p style=\"font-size: 12px; color: #666;\">Generado automáticamente por Tu Empresa S.L.</p>\n        </body>\n        </html>\n      `\n    }\n  }];\n}\n\n// Construir tabla de morosos\nlet tablaHtml = `\n  <table style=\"width:100%; border-collapse: collapse; margin: 15px 0;\">\n    <thead>\n      <tr>\n        <th style=\"border: 1px solid #ddd; padding: 8px; background: #d32f2f; color: white;\">Cliente</th>\n        <th style=\"border: 1px solid #ddd; padding: 8px; background: #d32f2f; color: white;\">Factura</th>\n        <th style=\"border: 1px solid #ddd; padding: 8px; background: #d32f2f; color: white;\">Importe</th>\n        <th style=\"border: 1px solid #ddd; padding: 8px; background: #d32f2f; color: white;\">Días vencido</th>\n        <th style=\"border: 1px solid #ddd; padding: 8px; background: #d32f2f; color: white;\">Contacto</th>\n        <th style=\"border: 1px solid #ddd; padding: 8px; background: #d32f2f; color: white;\">Teléfono</th>\n        <th style=\"border: 1px solid #ddd; padding: 8px; background: #d32f2f; color: white;\">Email</th>\n      </tr>\n    </thead>\n    <tbody>\n`;\n\nfor (const item of items) {\n  const d = item.json;\n  const importeFormateado = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(d.importe);\n  const diasVencido = d.dias_vencido || d.dias_vencido_calculado || 'N/A';\n  \n  tablaHtml += `\n    <tr>\n      <td style=\"border: 1px solid #ddd; padding: 8px;\">${d.cliente || 'N/A'}</td>\n      <td style=\"border: 1px solid #ddd; padding: 8px;\">${d.factura || 'N/A'}</td>\n      <td style=\"border: 1px solid #ddd; padding: 8px;\">${importeFormateado}</td>\n      <td style=\"border: 1px solid #ddd; padding: 8px;\">${diasVencido}</td>\n      <td style=\"border: 1px solid #ddd; padding: 8px;\">${d.contacto || 'N/A'}</td>\n      <td style=\"border: 1px solid #ddd; padding: 8px;\">${d.whatsapp || 'N/A'}</td>\n      <td style=\"border: 1px solid #ddd; padding: 8px;\">${d.email || 'N/A'}</td>\n    </tr>\n  `;\n}\n\ntablaHtml += `\n    </tbody>\n  </table>\n`;\n\nconst totalImporte = items.reduce((sum, item) => sum + (item.json.importe || 0), 0);\nconst totalImporteFormateado = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(totalImporte);\n\nconst asunto = `🚨 REPORTE SEMANAL DE MOROSOS - ${items.length} clientes - ${totalImporteFormateado}`;\n\nconst cuerpoHtml = `\n<html>\n<body style=\"font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto;\">\n  <div style=\"background: #d32f2f; color: white; padding: 20px; text-align: center;\">\n    <h2 style=\"margin:0;\">📊 Reporte Semanal de Morosos</h2>\n    <p style=\"margin:5px 0 0;\">${hoy}</p>\n  </div>\n\n  <div style=\"padding: 20px;\">\n    <p>Director,</p>\n    <p>Se adjunta el resumen de clientes en estado <strong>moroso</strong> al día de la fecha:</p>\n\n    ${tablaHtml}\n\n    <div style=\"background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;\">\n      <strong>📌 Resumen:</strong>\n      <ul>\n        <li>Total clientes morosos: <strong>${items.length}</strong></li>\n        <li>Monto total adeudado: <strong>${totalImporteFormateado}</strong></li>\n      </ul>\n    </div>\n\n    <div style=\"background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107;\">\n      <strong>⚠️ Recomendación:</strong> Priorizar contacto con los clientes de mayor antigüedad.\n    </div>\n\n    <hr>\n    <p style=\"font-size: 12px; color: #666; text-align: center;\">\n      Reporte generado automáticamente por Tu Empresa S.L..<br>\n      Para cualquier consulta, contacte al Departamento de Cobranza.\n    </p>\n  </div>\n</body>\n</html>\n`;\n\nreturn [{\n  json: {\n    hayMorosos: items.length > 0,\n    asunto: asunto,\n    cuerpoHtml: cuerpoHtml,\n    totalMorosos: items.length,\n    totalImporte: totalImporteFormateado,\n    destinatario: \"director@empresa.com\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1008,
+        2576
+      ],
+      "id": "35092642-5ebf-448f-b383-747c2d259afb",
+      "name": "Crear Reporte Morosos"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=TU_GEMINI_API_KEY",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "contents",
+              "value": "={{ [{\"parts\": [{\"text\": \"Eres un asistente de cobranza profesional. Redacta un email formal de alerta de morosidad para el Director de la empresa.\\n\\nINSTRUCCIONES IMPORTANTES:\\n- Responde ÚNICAMENTE con el texto del email\\n- NO incluyas preámbulos como 'Claro,' o 'Aquí tienes'\\n- Empieza directamente con 'Estimado/a Director/a,'\\n- Tono muy formal y urgente\\n- Máximo 150 palabras\\n\\nDATOS:\\nCliente: \" + $json.cliente + \"\\nFactura: \" + $json.factura + \"\\nImporte: \" + $json.importe + \"€\\nDías vencido: \" + $json.dias_vencido_calculado + \"\\n\\nRecomienda marcar como moroso.\"}]}] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0ebb68c4-b3c4-41f9-8ccb-7dd668ee71b2",
+      "name": "Prompt Nivel 4 - Alerta Director",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -32,
+        1968
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener TODOS los items de entrada\nconst geminiItems = $input.all();\nconst clienteItems = $('Calcular Días y Nivel').all();\n\nconst resultados = [];\n\nfor (let i = 0; i < geminiItems.length; i++) {\n  const gemini = geminiItems[i].json;\n  const cliente = clienteItems[i]?.json || {};\n  \n  let textoGemini = gemini.candidates?.[0]?.content?.parts?.[0]?.text || '';\n  \n  textoGemini = textoGemini\n    .replace(/\\*\\*/g, '')\n    .replace(/^(Claro,?|Aquí tienes[^:]*:|Por supuesto,?)[^\\n]*\\n+/i, '')\n    .trim();\n  \n  const importeFormateado = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(cliente.importe || 0);\n  const fechaVencimiento = cliente.fecha_vencimiento ? new Date(cliente.fecha_vencimiento).toLocaleDateString('es-ES') : 'N/D';\n  const hoy = new Date().toLocaleDateString('es-ES');\n  \n  // Dividir contacto en nombre y apellido\n  const nombreCompleto = cliente.contacto || '';\n  const espacioIndex = nombreCompleto.indexOf(' ');\n  const firstname = espacioIndex === -1 ? nombreCompleto : nombreCompleto.substring(0, espacioIndex);\n  const lastname = espacioIndex === -1 ? '' : nombreCompleto.substring(espacioIndex + 1);\n  \n  const asuntoEmail = `📄 Aviso de vencimiento: Factura ${cliente.factura || ''} – ${importeFormateado}`;\n  \n  const cuerpoEmail = `\n<html>\n<body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <div style=\"background: #fff3cd; padding: 20px; border-radius: 8px 8px 0 0; border-left: 4px solid #ffc107;\">\n    <h2 style=\"margin:0; color:#856404;\">⚠️ Factura con vencimiento hoy</h2>\n  </div>\n  <div style=\"padding: 20px;\">\n    <div style=\"background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 15px 0;\">\n      ${textoGemini}\n    </div>\n    <h3>📋 Datos de la factura</h3>\n    <table style=\"width:100%; border-collapse: collapse;\">\n      <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>Factura</strong></td><td style=\"padding: 8px;\">${cliente.factura || ''}</td></tr>\n      <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>Importe</strong></td><td style=\"padding: 8px;\"><strong style=\"color:#856404;\">${importeFormateado}</strong></td></tr>\n      <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>Fecha vencimiento</strong></td><td style=\"padding: 8px;\">${fechaVencimiento}</td></tr>\n    </table>\n    <p style=\"font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 15px;\">\n      Si ya realizó el pago, ignore este mensaje.\n    </p>\n  </div>\n  <div style=\"background: #f5f5f5; padding: 12px; text-align: center; font-size: 11px; border-radius: 0 0 8px 8px;\">\n    Generado automáticamente por Tu Empresa S.L. · ${hoy}\n  </div>\n</body>\n</html>`;\n  \n  resultados.push({\n    json: {\n      ...cliente,\n      asuntoEmail,\n      cuerpoEmail,\n      importeFormateado,\n      fechaVencimiento,\n      textoGemini,\n      canal: 'email',\n      nivel: 2,\n      firstname: firstname,\n      lastname: lastname\n    }\n  });\n}\n\nreturn resultados;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        1968
+      ],
+      "id": "b98c14e8-03f0-46f6-b2c4-8a18d601afbd",
+      "name": "Extraer Texto N4"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Extraer Texto N4').item.json.emailDirector || 'director@empresa.com' }}",
+        "subject": "={{ $('Extraer Texto N4').item.json.asuntoEmail }}",
+        "message": "={{ $('Extraer Texto N4').item.json.cuerpoEmail }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "3745f216-c23c-445d-9a83-6b6ca27d1858",
+      "name": "Email Director — Alerta Moroso",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2416,
+        1968
+      ],
+      "webhookId": "c97c96d2-2f2c-41f3-a245-1107c9e78412",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ljgYCoOX6HUCFoiL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_HUBSPOT_ACCESS_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2192,
+        1968
+      ],
+      "id": "66e66b9f-9e6a-41a4-8cf4-8360f49f006e",
+      "name": "HubSpot — Asociar Deal a Contacto"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.hubapi.com/crm/v3/objects/contacts/{{ $('Enrutar por Nivel de Escalamiento').item.json.email }}?idProperty=email",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "idProperty",
+              "value": "email"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_HUBSPOT_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        576,
+        1968
+      ],
+      "id": "057e054f-08b7-4387-9e62-02044b7048de",
+      "name": "HubSpot — Buscar Contacto",
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "idProperty",
+              "value": "email"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_HUBSPOT_ACCESS_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"properties\": {\n    \"email\": \"{{ $('Enrutar por Nivel de Escalamiento').item.json.email }}\",\n    \"firstname\": \"{{ $('Enrutar por Nivel de Escalamiento').item.json.contacto.split(' ')[0] }}\",\n    \"lastname\": \"{{ $('Enrutar por Nivel de Escalamiento').item.json.contacto.split(' ').slice(1).join(' ') }}\",\n    \"company\": \"{{ $('Enrutar por Nivel de Escalamiento').item.json.cliente }}\",\n    \"phone\": \"{{ $('Enrutar por Nivel de Escalamiento').item.json.whatsapp }}\",\n    \"outstanding_balance\": \"{{ $('Enrutar por Nivel de Escalamiento').item.json.importe }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1168,
+        2160
+      ],
+      "id": "3b5002d0-7760-4913-a006-60a76e073403",
+      "name": "HubSpot — Crear Contacto Nuevo",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/deals",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_HUBSPOT_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "properties",
+              "value": "={{ { \"dealname\": \"Morosidad - \" + $('Extraer Texto N4').item.json.cliente + \" - \" + $('Extraer Texto N4').item.json.factura, \"dealstage\": \"5246545098\", \"amount\": String($('Extraer Texto N4').item.json.importe), \"closedate\": $('Extraer Texto N4').item.json.fecha_vencimiento, \"pipeline\": \"default\" } }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1760,
+        1968
+      ],
+      "id": "5c77d4e9-56ef-4226-846b-2d9ef351f84d",
+      "name": "HubSpot — Crear Deal Morosidad"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dealId = $('HubSpot — Crear Deal Morosidad').item.json.id;\nconst contactId = $('HubSpot — Buscar Contacto').item.json.id;\n\nreturn [{\n  json: {\n    dealId,\n    contactId,\n    body: {\n      inputs: [{\n        from: { id: String(dealId) },\n        to: { id: String(contactId) },\n        types: [{ associationCategory: \"HUBSPOT_DEFINED\", associationTypeId: 3 }]\n      }]\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        1968
+      ],
+      "id": "85852442-c446-4ab6-b1dc-3604a0b7e2ef",
+      "name": "Preparar Asociación Deal-Contacto"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Cobranza",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ultimo_contacto": "={{ new Date().toLocaleDateString('es-ES') }}",
+            "row_number": 0,
+            "factura": "={{ $('Extraer Texto N4').item.json.factura }}",
+            "estado": "={{ $('Extraer Texto N4').item.json.estado }}",
+            "nivel_escalamiento": "={{ $('Extraer Texto N4').item.json.nivel_asignado }}"
+          },
+          "matchingColumns": [
+            "factura"
+          ],
+          "schema": [
+            {
+              "id": "cliente",
+              "displayName": "cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contacto",
+              "displayName": "contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "whatsapp",
+              "displayName": "whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "factura",
+              "displayName": "factura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "importe",
+              "displayName": "importe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha_emision",
+              "displayName": "fecha_emision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha_vencimiento",
+              "displayName": "fecha_vencimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "dias_vencido",
+              "displayName": "dias_vencido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nivel_escalamiento",
+              "displayName": "nivel_escalamiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ultimo_contacto",
+              "displayName": "ultimo_contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notas",
+              "displayName": "notas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "2771b310-b725-490e-99a2-a961d109f4c6",
+      "name": "Sheets — Marcar Moroso",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        1968
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zj5bwOFPydr87H0Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Extraer Texto N4').item.json;\n\nreturn [{\n  json: {\n    ...data,\n    dealBody: {\n      properties: {\n        dealname: `Morosidad - ${data.cliente} - ${data.factura}`,\n        dealstage: \"5246545098\",\n        amount: String(data.importe),\n        closedate: data.fecha_vencimiento,\n        pipeline: \"default\"\n      }\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        2160
+      ],
+      "id": "5ffc080b-de40-4da0-a7b8-ccbf3e8fc8ac",
+      "name": "Preparar Deal — Contacto Nuevo"
+    },
+    {
+      "parameters": {
+        "content": "# 🟠 ENTRADA + CLASIFICACIÓN IA\n## WhatsApp → Gemini clasifica (ADEUDO / INVENTARIO / OTRO)",
+        "height": 704,
+        "width": 2272,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1520,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "33e347fa-abb0-4a2b-88a7-b0a99c963145",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener TODOS los items de Gemini\nconst geminiItems = $input.all();\n\n// Obtener TODOS los items del nodo Enrutar por Nivel de Escalamiento\nconst clienteItems = $('Enrutar por Nivel de Escalamiento').all();\n\n// Procesar cada item por separado\nconst resultados = [];\n\nfor (let i = 0; i < geminiItems.length; i++) {\n  const geminiData = geminiItems[i].json;\n  const clienteData = clienteItems[i]?.json || {};\n  \n  const respuestaGemini = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';\n  \n  resultados.push({\n    json: {\n      ...clienteData,\n      ...geminiData,\n      textoGemini: respuestaGemini,\n      asuntoEmail: `🚨 ALERTA MOROSO CRÍTICO: ${clienteData.cliente || 'Cliente'} – ${clienteData.importe || 0}€`,\n      canal: 'email_director',\n      nivel: 4,\n      morosoCritico: true\n    }\n  });\n}\n\nreturn resultados;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        1968
+      ],
+      "id": "0cfccdba-bb50-4b83-bc65-9a6917b569f0",
+      "name": "Combinar Datos"
+    },
+    {
+      "parameters": {
+        "jsCode": "// En lugar de buscar un nodo que no existe, usa los datos que YA TIENES\nconst datosCliente = $input.first().json;\n\nreturn {\n  json: {\n    ...datosCliente,\n    contactId: datosCliente.contactId || null,\n    asuntoEmail: `🚨 ALERTA MOROSO CRÍTICO: ${datosCliente.cliente || 'Cliente'} – ${datosCliente.importe || 0}€`,\n    canal: 'email_director',\n    nivel: 4,\n    morosoCritico: true\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        1968
+      ],
+      "id": "579c486a-7651-4c12-b86e-76af9547b017",
+      "name": "Code (recuperar datos)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtiene los items del nodo anterior\nconst items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n  \n  // Estructura unificada con valores por defecto\n  return {\n    json: {\n      row_number: data.row_number,\n      cliente: data.cliente,\n      contacto: data.contacto || \"\",\n      email: data.email || \"\",\n      whatsapp: data.whatsapp || \"\",\n      factura: data.factura || \"\",\n      importe: data.importe || 0,\n      fecha_emision: data.fecha_emision || \"\",\n      emisor: data.emisor || \"\",\n      notas: data.notas || \"\",\n      dias_vencido_calculo: data.dias_vencido_calculo || 0,\n      nivel_assignado: data.nivel_assignado || 0\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        1968
+      ],
+      "id": "e7eb4f13-eb90-4da2-bc0d-00b3db88f5f3",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Guardar Datos Cliente\nreturn $input.all().map(item => ({\n  json: {\n    cliente_data: item.json,\n    ...item.json\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        1600
+      ],
+      "id": "8bd2d90f-e531-4300-8378-f1f8daa850d3",
+      "name": "Guardar Datos Cliente"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.hubapi.com/crm/v3/objects/contacts/{{ $json.contactId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_HUBSPOT_ACCESS_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"properties\": {\n    \"firstname\": \"{{ $('Extraer Texto N4').item.json.contacto.split(' ')[0] }}\",\n    \"lastname\": \"{{ $('Extraer Texto N4').item.json.contacto.split(' ').slice(1).join(' ') }}\",\n    \"company\": \"{{ $('Extraer Texto N4').item.json.cliente }}\",\n    \"outstanding_balance\": \"{{ $('Extraer Texto N4').item.json.importe }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1520,
+        1968
+      ],
+      "id": "8a450921-84d3-474e-bd14-4930bc9756d9",
+      "name": "HubSpot — Actualizar Contacto"
+    },
+    {
+      "parameters": {
+        "content": "# 🔵 RAMA INVENTARIO\n## Busca producto → Muestra stock y disponibilidad",
+        "height": 448,
+        "width": 2272,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1520,
+        608
+      ],
+      "typeVersion": 1,
+      "id": "d4b0d10d-8717-465e-8dc6-c1bbce8d30fa",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# 🟣 COBRANZA AUTOMÁTICA (4 NIVELES)\n## Diario 8am | Clasifica facturas por días vencido\n## N1: WhatsApp amable | N2: Email formal | N3: WhatsApp urgente | N4: Alerta Director",
+        "height": 704,
+        "width": 2272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1520,
+        1104
+      ],
+      "typeVersion": 1,
+      "id": "93ab69ad-01dd-4e99-a3bf-2edd64150a48",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# 🌺 NIVEL 4 | Moroso crítico (+20 días)\n## Gemini redacta alerta → Crea contacto/deal en HubSpot → Email al Director",
+        "height": 560,
+        "width": 3616,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        1840
+      ],
+      "typeVersion": 1,
+      "id": "cf3d8fa9-22b4-4783-8072-4a24605a5106",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "# 📊 REPORTE SEMANAL DE MOROSOS\n## Lunes 8am | Filtra estado MOROSO → Email al Director con tabla HTML",
+        "height": 384,
+        "width": 944,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1520,
+        2432
+      ],
+      "typeVersion": 1,
+      "id": "ecc28e38-479c-43d9-beac-139aea255a75",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/TU_WHATSAPP_PHONE_NUMBER_ID/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_WHATSAPP_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={\"messaging_product\": \"whatsapp\", \"to\": \"3434600000000\", \"type\": \"text\", \"text\": {\"body\": {{ JSON.stringify($json.mensajeWhatsApp) }}}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        32,
+        704
+      ],
+      "id": "34ebfbdb-c1ea-477e-b44f-fdda9e9201b4",
+      "name": "WhatsApp Auxiliar"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst resultados = [];\n\nfor (const item of items) {\n  const buscarResponse = item.json;\n  \n  // Extraer contactId\n  let contactId = buscarResponse.id || \n                  buscarResponse.contactId || \n                  (buscarResponse.results && buscarResponse.results[0] && buscarResponse.results[0].id);\n  \n  // Obtener los datos originales del cliente (deben venir en el mismo item)\n  const clienteData = buscarResponse;\n  \n  resultados.push({\n    json: {\n      // Datos para HubSpot\n      contactId: contactId,\n      \n      // Datos del cliente para el PATCH y el Deal\n      email: clienteData.email,\n      cliente: clienteData.cliente,\n      factura: clienteData.factura,\n      importe: clienteData.importe,\n      fecha_vencimiento: clienteData.fecha_vencimiento,\n      asuntoEmail: clienteData.asuntoEmail,\n      cuerpoEmail: clienteData.cuerpoEmail,\n      \n      // Mantener cualquier otro dato\n      ...clienteData\n    }\n  });\n}\n\nreturn resultados;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        1968
+      ],
+      "id": "2a465b9a-ee3c-4eb4-b8a4-59d33f7d86c7",
+      "name": "Preparar Actualización Contacto"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener TODOS los items de entrada (los que vienen de Error Branch)\nconst items = $input.all();\nconst resultados = [];\n\nfor (let i = 0; i < items.length; i++) {\n  const datosCliente = items[i].json;\n  \n  resultados.push({\n    json: {\n      ...datosCliente,\n      contactId: datosCliente.contactId || datosCliente.id || datosCliente.hs_object_id || null,\n      asuntoEmail: `🚨 ALERTA MOROSO CRÍTICO: ${datosCliente.cliente || 'Cliente'} – ${datosCliente.importe || 0}€`,\n      canal: 'email_director',\n      nivel: 4,\n      morosoCritico: true\n    }\n  });\n}\n\nreturn resultados;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        2160
+      ],
+      "id": "a4759961-1641-48e0-b9ba-469539881019",
+      "name": "Preparar Creación de Contacto"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n  \n  // Dividir el nombre completo (viene de Extraer Texto N4)\n  const nombreCompleto = data.contacto || '';\n  const espacioIndex = nombreCompleto.indexOf(' ');\n  const firstname = espacioIndex === -1 ? nombreCompleto : nombreCompleto.substring(0, espacioIndex);\n  const lastname = espacioIndex === -1 ? '' : nombreCompleto.substring(espacioIndex + 1);\n  \n  // Preparar body para actualizar contacto\n  return {\n    json: {\n      contactId: data.id || data.hs_object_id,\n      email: data.email,\n      firstname: firstname,\n      lastname: lastname,\n      company: data.cliente,\n      outstanding_balance: String(data.importe || 0)\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        1968
+      ],
+      "id": "c04d7cdf-2b15-4eb2-934b-19defec8b282",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Extract Variables": {
+      "main": [
+        [
+          {
+            "node": "Clasificar con GeminiAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Categoría": {
+      "main": [
+        [
+          {
+            "node": "Switch Categoría",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Categoría": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Adeudos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets - Inventario",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta Genérica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Adeudos": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta Adeudo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Inventario": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta Inventario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta Adeudo": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta Inventario": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Genérica": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificar con GeminiAI": {
+      "main": [
+        [
+          {
+            "node": "Extraer Categoría",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger 8am Diario": {
+      "main": [
+        [
+          {
+            "node": "Leer Inventario Completo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Inventario Completo": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Alertas Activas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Alertas Activas": {
+      "main": [
+        [
+          {
+            "node": "Un Producto a la Vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Un Producto a la Vez": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Gemini Genera OC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Genera OC": {
+      "main": [
+        [
+          {
+            "node": "Preparar Notificaciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Notificaciones": {
+      "main": [
+        [
+          {
+            "node": "Gmail Director",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WhatsApp Auxiliar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Director": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Estado en Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Texto N1": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Cliente — Recordatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Texto N2": {
+      "main": [
+        [
+          {
+            "node": "Email Cliente — Aviso Vencimiento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Texto N3": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Cliente — Urgente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Nivel 1 - Amable": {
+      "main": [
+        [
+          {
+            "node": "Extraer Texto N1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Nivel 2 - Formal": {
+      "main": [
+        [
+          {
+            "node": "Extraer Texto N2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Nivel 3 - Urgente": {
+      "main": [
+        [
+          {
+            "node": "Extraer Texto N3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Diario 8am — Cobranza": {
+      "main": [
+        [
+          {
+            "node": "Leer Facturas — Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Facturas — Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Calcular Días y Nivel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Días y Nivel": {
+      "main": [
+        [
+          {
+            "node": "Guardar Datos Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrutar por Nivel de Escalamiento": {
+      "main": [
+        [
+          {
+            "node": "Ignorar - Sin Nivel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prompt Nivel 1 - Amable",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prompt Nivel 2 - Formal",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prompt Nivel 3 - Urgente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Cliente — Recordatorio": {
+      "main": [
+        [
+          {
+            "node": "Sheets — Marcar Nivel 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Cliente — Aviso Vencimiento": {
+      "main": [
+        [
+          {
+            "node": "Sheets — Marcar Nivel 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets — Marcar Nivel 2": {
+      "main": [
+        []
+      ]
+    },
+    "WhatsApp Cliente — Urgente": {
+      "main": [
+        [
+          {
+            "node": "Sheets — Marcar Nivel 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Semanal 8am — Reporte Morosos": {
+      "main": [
+        [
+          {
+            "node": "Leer Cobranza — Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Cobranza — Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Crear Reporte Morosos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Reporte Morosos": {
+      "main": [
+        [
+          {
+            "node": "Enviar Reporte a Director",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Nivel 4 - Alerta Director": {
+      "main": [
+        [
+          {
+            "node": "Combinar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Texto N4": {
+      "main": [
+        [
+          {
+            "node": "HubSpot — Buscar Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Director — Alerta Moroso": {
+      "main": [
+        [
+          {
+            "node": "Sheets — Marcar Moroso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot — Buscar Contacto": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Creación de Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot — Crear Deal Morosidad": {
+      "main": [
+        [
+          {
+            "node": "Preparar Asociación Deal-Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Asociación Deal-Contacto": {
+      "main": [
+        [
+          {
+            "node": "HubSpot — Asociar Deal a Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot — Crear Contacto Nuevo": {
+      "main": [
+        [
+          {
+            "node": "Preparar Deal — Contacto Nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot — Asociar Deal a Contacto": {
+      "main": [
+        [
+          {
+            "node": "Email Director — Alerta Moroso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Deal — Contacto Nuevo": {
+      "main": [
+        [
+          {
+            "node": "HubSpot — Crear Deal Morosidad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combinar Datos": {
+      "main": [
+        [
+          {
+            "node": "Extraer Texto N4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code (recuperar datos)": {
+      "main": [
+        [
+          {
+            "node": "Preparar Actualización Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Prompt Nivel 4 - Alerta Director",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Datos Cliente": {
+      "main": [
+        [
+          {
+            "node": "Enrutar por Nivel de Escalamiento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot — Actualizar Contacto": {
+      "main": [
+        [
+          {
+            "node": "HubSpot — Crear Deal Morosidad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Auxiliar": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Estado en Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Actualización Contacto": {
+      "main": [
+        [
+          {
+            "node": "HubSpot — Actualizar Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Creación de Contacto": {
+      "main": [
+        [
+          {
+            "node": "HubSpot — Crear Contacto Nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code (recuperar datos)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timezone": "Europe/Madrid"
+  },
+  "versionId": "7911663b-e4f7-4be1-8722-4cdae78a6545",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c4d7c4b945e3e6424385c586a5d218e2cd8c43058d5f8361d7cde4c90671f195"
+  },
+  "id": "7Kp2jcH5tNuXgTvU",
+  "tags": []
+}
