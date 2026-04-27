@@ -1,0 +1,216 @@
+# 🤖 Sistema de Gestión de Cobro e Inventario con Asistente IA
+
+> Automatización empresarial completa construida con N8N, Gemini AI, WhatsApp Business API, Google Sheets, Gmail y HubSpot CRM. Automatiza alertas de inventario, órdenes de compra, escalamiento de cobranza y trazabilidad en CRM — sin intervención manual.
+
+[![N8N](https://img.shields.io/badge/N8N-Workflow-orange?style=flat-square)](https://n8n.io)
+[![Gemini AI](https://img.shields.io/badge/Gemini-AI-4285F4?style=flat-square&logo=google)](https://ai.google.dev)
+[![WhatsApp](https://img.shields.io/badge/WhatsApp-Business_API-25D366?style=flat-square&logo=whatsapp)](https://developers.facebook.com/docs/whatsapp)
+[![HubSpot](https://img.shields.io/badge/HubSpot-CRM-FF7A59?style=flat-square&logo=hubspot)](https://hubspot.com)
+[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-22c55e?style=flat-square)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Production_Ready-22c55e?style=flat-square)](https://github.com/alejandro-orbis)
+
+
+---
+
+## 🎯 ¿Qué hace?
+
+Tres módulos completamente automatizados que se ejecutan a diario sin intervención humana:
+
+### 🤖 Asistente WhatsApp con IA
+Los clientes envían un mensaje de WhatsApp y reciben respuesta inmediata:
+- **Consulta de adeudo** → "¿Cuánto debo?" → Devuelve datos reales de Google Sheets
+- **Consulta de inventario** → "¿Tienen detergente?" → Devuelve stock en tiempo real
+- **Otro** → Respuesta automática amable con opciones disponibles
+
+### 📦 Módulo 1A — Alertas de Inventario y Órdenes de Compra Automáticas
+Cada día a las 8am el sistema:
+1. Lee el inventario completo desde Google Sheets
+2. Detecta productos por debajo del stock mínimo
+3. Usa **Gemini AI** para generar un borrador de OC con el historial de las últimas 3 compras
+4. Envía un resumen por **WhatsApp** al auxiliar de compras
+5. Envía un **email HTML** al Director con botones Autorizar / Corregir
+6. Actualiza Google Sheets al estado `PENDIENTE`
+
+### 💰 Módulo 1B — Cobranza Preventiva con 4 Niveles de Escalamiento
+Cada día a las 8am el sistema clasifica cada factura y actúa según su estado:
+
+| Nivel | Cuándo | Canal | Tono |
+|---|---|---|---|
+| 1 | 3 días antes de vencer | WhatsApp | Recordatorio amable |
+| 2 | Vence hoy | Email | Aviso formal |
+| 3 | 8 días vencida | WhatsApp | Seguimiento urgente |
+| 4 | 20+ días vencida | Email al Director + HubSpot | Alerta crítica |
+
+Para cada deudor crítico (Nivel 4):
+- Crea o actualiza el **contacto en HubSpot**
+- Crea un **Deal** vinculado a la factura
+- Asocia el Deal al contacto automáticamente
+- Envía email de alerta al Director con mensaje generado por IA
+- Actualiza el estado en Google Sheets
+
+### 📊 Reporte Semanal — Cada lunes a las 8am
+Genera y envía automáticamente al Director un informe completo de todos los clientes morosos con la deuda total pendiente.
+
+---
+
+## 🛠️ Stack tecnológico
+
+| Herramienta | Uso |
+|---|---|
+| [N8N](https://n8n.io) | Orquestación de flujos y automatización |
+| [Gemini AI](https://ai.google.dev) | Generación de mensajes y clasificación de intención |
+| [WhatsApp Business API](https://developers.facebook.com/docs/whatsapp) | Mensajería entrante y saliente |
+| [Google Sheets](https://sheets.google.com) | Capa de datos intermedia (simula ERP) |
+| [Gmail](https://gmail.com) | Notificaciones y reportes por email |
+| [HubSpot CRM](https://hubspot.com) | Gestión de contactos y seguimiento de deals |
+
+---
+
+## 📁 Estructura del proyecto
+
+```
+├── Sistema_de_Gestión_de_Cobro_e_Inventario_con_Asistente_IA.json
+│                          ← Workflow N8N (importar directamente)
+├── data/
+│   └── Proyecto_Inventario_Cobranza.xlsx
+│                          ← Plantilla Google Sheets (subir a Drive)
+└── README.md
+```
+
+---
+
+## 🚀 Guía de configuración
+
+### 1. Requisitos previos
+
+- Instancia de N8N (cloud o self-hosted)
+- Cuenta Google (Sheets + Gmail)
+- Cuenta Meta for Developers + WhatsApp Business API
+- Cuenta Google AI Studio (API key de Gemini)
+- Cuenta HubSpot (el plan gratuito funciona)
+
+### 2. Configurar credenciales en N8N
+
+| Credencial | Dónde obtenerla |
+|---|---|
+| API Key de Gemini | [aistudio.google.com](https://aistudio.google.com) |
+| Access Token de WhatsApp | Meta for Developers → Tu App → WhatsApp → Configuración de API |
+| Phone Number ID de WhatsApp | Mismo lugar que el anterior |
+| Google Sheets OAuth | OAuth integrado de N8N |
+| Gmail OAuth | OAuth integrado de N8N |
+| Token de App Privada HubSpot | HubSpot → Configuración → Integraciones → Apps privadas |
+
+### 3. Subir la plantilla de Google Sheets
+
+Sube `Proyecto_Inventario_Cobranza.xlsx` a Google Drive y copia el Sheet ID de la URL:
+```
+https://docs.google.com/spreadsheets/d/TU_SHEET_ID/edit
+```
+
+### 4. Importar el workflow en N8N
+
+En N8N: menú `...` → **Importar desde archivo** → selecciona el JSON.
+
+### 5. Actualizar el Sheet ID
+
+Busca `TU_SHEET_ID_AQUI` en el workflow importado y reemplázalo con tu ID real.
+
+### 6. Configurar el Webhook de WhatsApp
+
+En Meta for Developers → WhatsApp → Configuración → Webhook:
+```
+URL de devolución de llamada: https://tu-instancia-n8n.com/webhook/webhook
+Identificador de verificación: tu-token-personalizado
+```
+
+### 7. Activar el workflow
+
+Cambia el toggle del workflow a **Active** en N8N.
+
+---
+
+## 📋 Estructura de Google Sheets
+
+### Hoja Inventario
+
+| Columna | Descripción |
+|---|---|
+| `producto` | Nombre del producto |
+| `stock_actual` | Stock actual |
+| `stock_minimo` | Nivel mínimo de stock |
+| `proveedor` | Nombre del proveedor |
+| `email_proveedor` | Email del proveedor |
+| `whatsapp_proveedor` | WhatsApp del proveedor (con prefijo de país) |
+| `precio_unitario` | Precio por unidad |
+| `ultima_compra_1/2/3` | Fechas de las últimas 3 compras |
+| `cantidad_1/2/3` | Cantidades de las últimas 3 compras |
+| `precio_1/2/3` | Precios de las últimas 3 compras |
+| `alerta_activa` | SÍ / NO / PENDIENTE |
+
+### Hoja Cobranza
+
+| Columna | Descripción |
+|---|---|
+| `cliente` | Nombre de la empresa |
+| `contacto` | Persona de contacto |
+| `email` | Email del contacto |
+| `whatsapp` | Número de WhatsApp (con prefijo de país, sin +) |
+| `factura` | Número de factura |
+| `importe` | Importe |
+| `fecha_vencimiento` | Fecha de vencimiento (YYYY-MM-DD) |
+| `nivel_escalamiento` | Nivel actual (0-4) |
+| `ultimo_contacto` | Fecha del último contacto |
+| `estado` | AL DÍA / POR VENCER / VENCE HOY / VENCIDA / MOROSO |
+
+---
+
+## 🔄 Arquitectura del workflow
+
+```
+WhatsApp Trigger
+  → Gemini clasifica intención (ADEUDO / INVENTARIO / OTRO)
+  → Consulta Google Sheets
+  → Respuesta formateada → Respuesta WhatsApp
+
+Trigger programado (diario 8am) — Inventario
+  → Lee Google Sheets
+  → Filtra stock bajo (alerta_activa = SÍ)
+  → Divide por producto
+  → Gemini genera borrador de OC
+  → WhatsApp al auxiliar + Email al Director
+  → Actualiza Sheets a PENDIENTE
+
+Trigger programado (diario 8am) — Cobranza
+  → Lee Google Sheets
+  → Calcula días vencido → asigna nivel
+  → Enruta por nivel (Switch)
+  → Gemini genera mensaje personalizado
+  → Envía por WhatsApp / Email
+  → Nivel 4: contacto HubSpot + Deal + Asociación
+  → Actualiza Sheets
+
+Trigger programado (lunes 8am) — Reporte Semanal
+  → Lee todos los clientes morosos
+  → Genera informe HTML
+  → Email al Director
+```
+
+---
+
+## 📄 Licencia
+
+Licencia MIT — libre para uso personal y comercial.
+
+---
+
+## 👤 Autor
+
+**Alejandro Peralta** — Especialista en Automatización de Procesos
+
+- GitHub: [@alejandro-orbis](https://github.com/alejandro-orbis)
+- LinkedIn: [linkedin.com/in/alejandro-orbis](https://linkedin.com/in/alejandro-orbis)
+- Email: [alejandro@orbisautomations.com](mailto:alejandro@orbisautomations.com)
+
+---
+
+*Creado para eliminar el trabajo operativo repetitivo — para que los equipos se enfoquen en lo que realmente importa.*
